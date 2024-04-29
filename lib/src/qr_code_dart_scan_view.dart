@@ -70,7 +70,8 @@ class QRCodeDartScanView extends StatefulWidget {
   QRCodeDartScanViewState createState() => QRCodeDartScanViewState();
 }
 
-class QRCodeDartScanViewState extends State<QRCodeDartScanView> with WidgetsBindingObserver {
+class QRCodeDartScanViewState extends State<QRCodeDartScanView>
+    with WidgetsBindingObserver {
   late QRCodeDartScanController controller;
   bool initialized = false;
 
@@ -128,7 +129,7 @@ class QRCodeDartScanViewState extends State<QRCodeDartScanView> with WidgetsBind
     );
   }
 
-  Widget _buildButton() {
+  Widget _defaultPicButton() {
     return ValueListenableBuilder<PreviewState>(
       valueListenable: controller.state,
       builder: (context, value, child) {
@@ -149,7 +150,7 @@ class QRCodeDartScanViewState extends State<QRCodeDartScanView> with WidgetsBind
     var camera = controller.cameraController!.value;
     // fetch screen size
     final size = MediaQuery.of(context).size;
-
+    print("context size is ${size}");
     // calculate scale depending on screen and camera ratios
     // this is actually size.aspectRatio / (1 / camera.aspectRatio)
     // because camera preview size is received as landscape
@@ -158,30 +159,36 @@ class QRCodeDartScanViewState extends State<QRCodeDartScanView> with WidgetsBind
     if (widget.widthPreview != null && widget.heightPreview != null) {
       sizePreview = Size(widget.widthPreview!, widget.heightPreview!);
     }
-    var scale = sizePreview.aspectRatio * camera.aspectRatio;
+    // var scale = sizePreview.aspectRatio * camera.aspectRatio;
+    print(
+        "sizePreview.aspectRatio =  ${sizePreview.aspectRatio}, camera.aspectRatio = ${camera.aspectRatio}");
 
+    print(
+        "widget.widthPreview = ${widget.widthPreview}, widget.heightPreview = ${widget.heightPreview}");
     // to prevent scaling down, invert the value
-    if (scale < 1) scale = 1 / scale;
-
+    // if (scale < 1) scale = 1 / scale;R
     return SizedBox(
-      key: Key(controller.state.value.typeCamera.toString()),
-      width: widget.widthPreview,
-      height: widget.heightPreview,
-      child: Stack(
-        children: [
-          Transform.scale(
-            scale: scale,
-            child: Center(
-              child: CameraPreview(
-                controller.cameraController!,
+        key: Key(controller.state.value.typeCamera.toString()),
+        width: widget.widthPreview,
+        height: widget.heightPreview,
+        child: ConstrainedBox(
+          constraints: BoxConstraints.expand(),
+          child: Stack(
+            children: [
+              // Transform.scale(
+              //   scale: scale,
+              // child:
+              Center(
+                child: CameraPreview(
+                  controller.cameraController!,
+                ),
               ),
-            ),
+              // ),
+              // if (controller.state.value.typeScan == TypeScan.takePicture) _defaultPicButton(),
+              widget.child ?? const SizedBox.shrink(),
+            ],
           ),
-          if (controller.state.value.typeScan == TypeScan.takePicture) _buildButton(),
-          widget.child ?? const SizedBox.shrink(),
-        ],
-      ),
-    );
+        ));
   }
 
   void _onStateListener() {
